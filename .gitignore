@@ -1,0 +1,10 @@
+CMAPSS/*.pdf
+CMAPSS/*.txt
+
+models/*.model
+
+.venv/
+.DS_Store
+__pycache__
+
+run.sh
