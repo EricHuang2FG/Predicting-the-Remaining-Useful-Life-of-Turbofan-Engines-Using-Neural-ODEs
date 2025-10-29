@@ -142,8 +142,9 @@ def evaluate_model(
 
     sum_squared_error: int = 0
     for index, value in enumerate(prediction_array):
-        if abs(value) <= 100:  # remove bad values like -1500
-            sum_squared_error += (value - ground_truth_array[index]) ** 2
+        # remove bad values like -1500
+        clipped_value = value if abs(value) <= 100 else 100
+        sum_squared_error += (clipped_value - ground_truth_array[index]) ** 2
     root_mean_squared_erro_error: float = (
         sum_squared_error / prediction_array.shape[0]
     ) ** 0.5
