@@ -13,6 +13,9 @@ def main() -> None:
     )
     node.evaluate_model(x_test, y_test, "models/ode.FD002.v1.model")
 
+    print("hi")
+    print("hi")
+
 
 if __name__ == "__main__":
     main()
