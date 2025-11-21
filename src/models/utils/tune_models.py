@@ -36,8 +36,14 @@ def learning_rate_sweep(
         )
         losses.append(
             evaluate_model(
-                x_validation, y_validation, model_class, model, None, settings=settings
-            )
+                x_validation,
+                y_validation,
+                model_class,
+                model,
+                None,
+                settings=settings,
+                plot=False,
+            )[0]
         )
 
     plt.figure(figsize=(12, 9))
@@ -75,8 +81,14 @@ def hidden_dimensions_sweep(
         )
         losses.append(
             evaluate_model(
-                x_validation, y_validation, model_class, model, None, settings=settings
-            )
+                x_validation,
+                y_validation,
+                model_class,
+                model,
+                None,
+                settings=settings,
+                plot=False,
+            )[0]
         )
 
     plt.figure(figsize=(12, 9))
@@ -126,6 +138,7 @@ def dropout_rate_sweep(
             trained_model,
             None,
             settings=curr_settings,
+            plot=False,
         )
         losses.append(rmse)
         total_loss.append(trained_loss)
@@ -174,4 +187,4 @@ if __name__ == "__main__":
         "regressor_dimension": 32,
         "dropout": 0.2,
     }
-    learning_rate_sweep(MODEL_TYPE_NODE, "CMAPSS/train_FD001.txt", settings=settings)
+    learning_rate_sweep(MODEL_TYPE_NODE, "CMAPSS/train_FD003.txt", settings=settings)

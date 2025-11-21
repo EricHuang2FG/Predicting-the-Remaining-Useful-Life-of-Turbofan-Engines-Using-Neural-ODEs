@@ -59,7 +59,7 @@ def train_model(
     input_data: torch.FloatTensor,
     expected_output: torch.FloatTensor,
     settings: dict = DEFAULT_NETWORK_SETTINGS,
-    return_loss: bool = False
+    return_loss: bool = False,
 ):
     model = initialize_model(model_class, settings=settings)
 
@@ -90,7 +90,7 @@ def train_model(
         )
 
     torch.save(model.state_dict(), dest_path)
-    
+
     if return_loss:
         return model, loss
     return model
@@ -100,9 +100,10 @@ def evaluate_model(
     input_data: torch.FloatTensor,
     expected_output: torch.FloatTensor,
     model_class: str,
-    model: nn.Module, # pass this in directly, or, pass in None here but give the model_path
+    model: nn.Module,  # pass this in directly, or, pass in None here but give the model_path
     model_path: str = "models/ode.model",
     settings: dict = DEFAULT_NETWORK_SETTINGS,
+    plot: bool = True,
 ) -> tuple[float, float]:
     if not model:
         model = load_model_from_file(model_class, path=model_path, settings=settings)
@@ -130,26 +131,34 @@ def evaluate_model(
         sort_indicies
     ]
 
-    x = list(range(len(prediction_array)))
+    if plot:
+        x = list(range(len(prediction_array)))
 
-    plt.plot(x, ground_truth_sorted, color="red")
-    plt.plot(x, prediction_array_cleaned_sorted, color="purple")
-    plt.show()
+        plt.plot(x, ground_truth_sorted, color="red")
+        plt.plot(x, prediction_array_cleaned_sorted, color="purple")
+        plt.show()
 
-    sum_squared_error: int = 0
-    for index, value in enumerate(prediction_array):
-        clipped_value = value if abs(value) <= 100 else 100
-        sum_squared_error += (clipped_value - ground_truth_array[index]) ** 2
-    root_mean_squared_error: float = (
-        sum_squared_error / prediction_array.shape[0]
-    ) ** 0.5
-    print(root_mean_squared_error)
+    # sum_squared_error: int = 0
+    # for index, value in enumerate(prediction_array):
+    #     clipped_value = value if abs(value) <= 100 else 100
+    #     sum_squared_error += (clipped_value - ground_truth_array[index]) ** 2
+    # root_mean_squared_error: float = (
+    #     sum_squared_error / prediction_array.shape[0]
+    # ) ** 0.5
+    # print(root_mean_squared_error)
 
     rmse = np.sqrt(np.mean((prediction_array_cleaned - ground_truth_array) ** 2))
 
-    mape = np.sum(
-        np.abs((prediction_array_cleaned - ground_truth_array) / ground_truth_array)
-    ) / len(prediction_array_cleaned)
+    non_zero_mask = ground_truth_array != 0
+    mape = np.mean(
+        np.abs(
+            (
+                prediction_array_cleaned[non_zero_mask]
+                - ground_truth_array[non_zero_mask]
+            )
+            / ground_truth_array[non_zero_mask]
+        )
+    )
 
     print(rmse)
     print(mape)
