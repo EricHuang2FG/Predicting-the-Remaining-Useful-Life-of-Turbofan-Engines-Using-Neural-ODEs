@@ -2,13 +2,13 @@ import torch
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from src.constants import NUM_SETTINGS_AND_SENSOR_READINGS
+from src.utils.constants import NUM_SETTINGS_AND_SENSOR_READINGS, DEFAULT_WINDOW_SIZE
 
 
 # reference paper for this processing:
 # https://link.springer.com/article/10.1007/s44196-024-00639-w#data-availability
 def preprocess_training_data(
-    file_path: str, window_size: int = 40, max_rul: int = 100
+    file_path: str, window_size: int = DEFAULT_WINDOW_SIZE, max_rul: int = 100
 ) -> tuple[torch.FloatTensor, torch.FloatTensor, StandardScaler]:
     # data has the size (num_lines, 26)
     # column 1: engine number
@@ -61,7 +61,10 @@ def preprocess_training_data(
 
 
 def preprocess_test_data(
-    test_data_path: str, rul_path: str, scaler: StandardScaler, window_size: int = 40
+    test_data_path: str,
+    rul_path: str,
+    scaler: StandardScaler,
+    window_size: int = DEFAULT_WINDOW_SIZE,
 ) -> tuple[torch.FloatTensor, torch.FloatTensor]:
     # similar to preprocess_trainng_data() but runs on test data and real RUL
     # also only takes the last window of each engine test
@@ -94,6 +97,34 @@ def preprocess_test_data(
     input_data = input_data_flattened.reshape(orig_shape)
 
     return torch.FloatTensor(input_data), torch.FloatTensor(rul_data)
+
+
+def split_tensors_by_ratio(
+    tensor_a: torch.FloatTensor, tensor_b: torch.FloatTensor, ratio: float = 0.7
+) -> tuple[
+    tuple[torch.FloatTensor, torch.FloatTensor],
+    tuple[torch.FloatTensor, torch.FloatTensor],
+]:
+    # slice each tensor such that it gives a tuple
+    # containing a tensor with the first ratio fraction of elements of the original tensor
+    # and a tensor that contains the remaining elements of the original tensor
+    # the same is performed on tensor_a and tensor_b, and the results are returned as a tuple
+
+    # for our use case, tensor_a and tensor_b have the same on its first dimension
+    num_data = tensor_a.shape[0]
+    split_location = int(ratio * num_data)
+
+    randomized_indicies = torch.randperm(num_data)
+
+    left_index, right_index = (
+        randomized_indicies[:split_location],
+        randomized_indicies[split_location:],
+    )
+
+    a_left, b_left = tensor_a[left_index], tensor_b[left_index]
+    a_right, b_right = tensor_a[right_index], tensor_b[right_index]
+
+    return ((a_left, a_right), (b_left, b_right))
 
 
 if __name__ == "__main__":
