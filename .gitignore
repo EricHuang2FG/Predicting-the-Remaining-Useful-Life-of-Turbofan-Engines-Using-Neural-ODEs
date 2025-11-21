@@ -6,5 +6,5 @@ models/*.model
 .venv/
 .DS_Store
 __pycache__
-
+run.bat
 run.sh
