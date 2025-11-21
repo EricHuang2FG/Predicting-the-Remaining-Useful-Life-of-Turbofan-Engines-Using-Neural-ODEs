@@ -152,7 +152,12 @@ def evaluate_model(
 
     rmse = np.sqrt(np.mean((prediction_array_cleaned - ground_truth_array) ** 2))
 
+    mape = np.sum(
+        np.abs((prediction_array_cleaned - ground_truth_array) / ground_truth_array)
+    ) / len(prediction_array_cleaned)
+
     print(rmse)
+    print(mape)
 
 
 def load_model(
