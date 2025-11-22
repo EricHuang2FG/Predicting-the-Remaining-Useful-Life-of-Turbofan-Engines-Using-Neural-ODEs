@@ -7,7 +7,13 @@ from src.utils.data_processing import (
     split_tensors_by_ratio,
 )
 from src.models.utils.model_utils import train_model, evaluate_model
-from src.utils.constants import DEFAULT_NETWORK_SETTINGS, MODEL_TYPE_NODE
+from src.utils.constants import (
+    DEFAULT_NETWORK_SETTINGS,
+    MODEL_TYPE_NODE,
+    DIMENSION_TYPE_ENCODER,
+    DIMENSION_TYPE_HIDDEN,
+    DIMENSION_TYPE_REGRESSOR,
+)
 
 
 def learning_rate_sweep(
@@ -41,7 +47,7 @@ def learning_rate_sweep(
                 model_class,
                 model,
                 None,
-                settings=settings,
+                settings=curr_settings,
                 plot=False,
             )[0]
         )
@@ -49,8 +55,8 @@ def learning_rate_sweep(
     plt.figure(figsize=(12, 9))
     plt.plot(candidate_lrs, losses, marker="x")
     plt.xscale("log")
-    plt.xlabel("learning rates")
-    plt.ylabel("validation loss RMSE")
+    plt.xlabel("Learning Rates")
+    plt.ylabel("Validation RMSE")
     plt.grid(True)
     plt.show()
 
@@ -59,7 +65,14 @@ def hidden_dimensions_sweep(
     model_class: str,
     training_data_directory: str,
     settings: dict = DEFAULT_NETWORK_SETTINGS,
+    dimension_type: str = DIMENSION_TYPE_HIDDEN,
 ):
+    if dimension_type not in [
+        DIMENSION_TYPE_HIDDEN,
+        DIMENSION_TYPE_ENCODER,
+        DIMENSION_TYPE_REGRESSOR,
+    ]:
+        raise ValueError(f"Unexpected dimension type given: {dimension_type}")
     x, y, _ = preprocess_training_data(training_data_directory)
 
     (x_train, x_validation), (y_train, y_validation) = split_tensors_by_ratio(
@@ -68,10 +81,10 @@ def hidden_dimensions_sweep(
 
     curr_settings = settings.copy()
 
-    candidate_hds = [32, 48, 64, 96, 128]
+    candidate_hds = [32, 64, 128]
     losses = []
     for hd in candidate_hds:
-        curr_settings["hidden_dimension"] = hd
+        curr_settings[dimension_type] = hd
         model = train_model(
             model_class,
             "models/tunning_dummy.model",
@@ -86,15 +99,15 @@ def hidden_dimensions_sweep(
                 model_class,
                 model,
                 None,
-                settings=settings,
+                settings=curr_settings,
                 plot=False,
             )[0]
         )
 
     plt.figure(figsize=(12, 9))
     plt.plot(candidate_hds, losses, marker="x")
-    plt.xlabel("number of hidden dimensions for ODE")
-    plt.ylabel("validation loss RMSE")
+    plt.xlabel(f"{dimension_type} for ODE")
+    plt.ylabel("Validation RMSE")
     plt.grid(True)
     plt.show()
 
@@ -142,13 +155,12 @@ def dropout_rate_sweep(
         )
         losses.append(rmse)
         total_loss.append(trained_loss)
-        print(rmse)  # priniting rmse just to see what the values are, can get rid of
 
     plt.figure(figsize=(12, 9))
     plt.plot(candidate_dor, losses, color="red", marker="x")
     plt.plot(candidate_dor, total_loss, color="blue", marker="o")
-    plt.xlabel("dropout rate")
-    plt.ylabel("validation loss RMSE")
+    plt.xlabel("Dropout Rate")
+    plt.ylabel("Validation/Training RMSE")
     plt.grid(True)
     plt.show()
 
@@ -180,11 +192,15 @@ if __name__ == "__main__":
 
     settings: dict = {
         "batch_size": 128,
-        "epochs": 5,
+        "epochs": 10,
         "lr": 0.001,
         "hidden_dimension": 64,
         "encoder_dimension": 128,
-        "regressor_dimension": 32,
+        "regressor_dimension": 128,
         "dropout": 0.2,
     }
-    learning_rate_sweep(MODEL_TYPE_NODE, "CMAPSS/train_FD003.txt", settings=settings)
+    dropout_rate_sweep(
+        MODEL_TYPE_NODE,
+        "CMAPSS/train_FD001.txt",
+        settings=settings,
+    )

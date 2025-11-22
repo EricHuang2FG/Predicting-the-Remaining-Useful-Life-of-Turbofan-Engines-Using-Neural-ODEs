@@ -60,6 +60,8 @@ def train_model(
     expected_output: torch.FloatTensor,
     settings: dict = DEFAULT_NETWORK_SETTINGS,
     return_loss: bool = False,
+    input_validation_data: torch.FloatTensor = None,  # pass in if early stopping is desired
+    expected_validation_output: torch.FloatTensor = None,
 ):
     model = initialize_model(model_class, settings=settings)
 
@@ -70,9 +72,13 @@ def train_model(
     dataloader = DataLoader(dataset, batch_size=settings["batch_size"], shuffle=True)
     model.train()
 
+    lowest_validation_loss = float("inf")
+    num_no_improvement_epochs = 0
+    optimal_state = None
+
     epochs = settings["epochs"]
     for epoch in range(epochs):
-        total_loss = 0
+        total_loss_per_epoch = 0
         for x, y in dataloader:
             optimizer.zero_grad()  # zero all the gradients first
             predictions = model(x)  # CALLS MODEL TO GET THE MODEL'S PREDICTION
@@ -83,16 +89,44 @@ def train_model(
             # known as the adjoint method
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()  # updates the parameters/weights taking into account those gradient values, and size of each step is determined by learning rate
-            total_loss += loss.item()
+            total_loss_per_epoch += loss.item()
 
         print(
-            f"Epoch [{epoch + 1}/{epochs}], loss: {(total_loss / len(dataloader)):.6f}"
+            f"Epoch [{epoch + 1}/{epochs}], loss: {(total_loss_per_epoch / len(dataloader)):.6f}"
         )
+
+        # check using validation set to see if early stopping is required
+        if input_validation_data is not None and expected_validation_output is not None:
+            model.eval()
+            with torch.no_grad():
+                validation_predictions = model(input_validation_data)
+                validation_loss = loss_function(
+                    validation_predictions, expected_validation_output
+                ).item()
+                print(f"Current validation loss: {validation_loss}")
+
+            if (
+                validation_loss <= lowest_validation_loss - 1e-4
+            ):  # if doesn't change to 4 decimal places
+                lowest_validation_loss = validation_loss
+                num_no_improvement_epochs = 0
+                optimal_state = model.state_dict()
+            else:
+                num_no_improvement_epochs += 1
+
+            if num_no_improvement_epochs >= 5:
+                print(
+                    f"Early stopping at [{epoch + 1}/{epochs}], validation loss: {(lowest_validation_loss):.6f}"
+                )
+                model.load_state_dict(optimal_state)
+                break
 
     torch.save(model.state_dict(), dest_path)
 
     if return_loss:
-        return model, loss
+        return model, total_loss_per_epoch / len(
+            dataloader
+        )  # training loss at last epoch
     return model
 
 
