@@ -6,11 +6,17 @@ from torch.utils.data import TensorDataset, DataLoader
 
 from src.models.node import ODE
 from src.utils.constants import (
+    DATASET_ID_FD001,
+    DATASET_ID_FD002,
+    DATASET_ID_FD003,
+    DATASET_ID_FD004,
     NUM_SETTINGS_AND_SENSOR_READINGS,
     MODEL_TYPE_CNN_NODE,
     MODEL_TYPE_NODE,
     DEFAULT_NETWORK_SETTINGS,
     DEFAULT_WINDOW_SIZE,
+    DEFAULT_FIGURE_SIZE,
+    LINE_WIDTH,
 )
 
 
@@ -107,7 +113,7 @@ def train_model(
 
             if (
                 validation_loss <= lowest_validation_loss - 1e-4
-            ):  # if doesn't change to 4 decimal places
+            ):  # if it's better, to a 4 decimal places tolerance
                 lowest_validation_loss = validation_loss
                 num_no_improvement_epochs = 0
                 optimal_state = model.state_dict()
@@ -120,6 +126,9 @@ def train_model(
                 )
                 model.load_state_dict(optimal_state)
                 break
+
+    if optimal_state is not None:
+        model.load_state_dict(optimal_state)
 
     torch.save(model.state_dict(), dest_path)
 
@@ -138,6 +147,7 @@ def evaluate_model(
     model_path: str = "models/ode.model",
     settings: dict = DEFAULT_NETWORK_SETTINGS,
     plot: bool = True,
+    figure_dest: str = "figures/untitled_figure.pdf",
 ) -> tuple[float, float]:
     if not model:
         model = load_model_from_file(model_class, path=model_path, settings=settings)
@@ -150,36 +160,24 @@ def evaluate_model(
     ground_truth_array: np.ndarray = expected_output.numpy()
 
     # clip to be below 100 (the paper does this too)
-    prediction_array = np.minimum(100, prediction_array)
+    # prediction_array = np.minimum(100, prediction_array)
     ground_truth_array = np.minimum(100, ground_truth_array)
 
-    # clean out bad values like -1500 (there are about 4 of them out of 100)
+    # clip the value in the array to be meaningful values between 0 and 100
+    # similarly to the RUL segmentation done in the reference paper
+    # for obviously bad values like -1500 (there are about 4 of them out of 100)
+    # we replace with a default of 100
     prediction_array_cleaned: list = [
         value if 0 <= value <= 100 else 100 for value in prediction_array
     ]
     prediction_array_cleaned: np.ndarray = np.array(prediction_array_cleaned)
+    ground_truth_array = np.minimum(100, ground_truth_array)
 
     sort_indicies: np.ndarray = np.argsort(ground_truth_array)
     ground_truth_sorted: np.ndarray = ground_truth_array[sort_indicies]
     prediction_array_cleaned_sorted: np.ndarray = prediction_array_cleaned[
         sort_indicies
     ]
-
-    if plot:
-        x = list(range(len(prediction_array)))
-
-        plt.plot(x, ground_truth_sorted, color="red")
-        plt.plot(x, prediction_array_cleaned_sorted, color="purple")
-        plt.show()
-
-    # sum_squared_error: int = 0
-    # for index, value in enumerate(prediction_array):
-    #     clipped_value = value if abs(value) <= 100 else 100
-    #     sum_squared_error += (clipped_value - ground_truth_array[index]) ** 2
-    # root_mean_squared_error: float = (
-    #     sum_squared_error / prediction_array.shape[0]
-    # ) ** 0.5
-    # print(root_mean_squared_error)
 
     rmse = np.sqrt(np.mean((prediction_array_cleaned - ground_truth_array) ** 2))
 
@@ -194,8 +192,57 @@ def evaluate_model(
         )
     )
 
-    print(rmse)
-    print(mape)
+    print(f"RMSE: {rmse}, MAPE: {mape}")
+
+    if plot:
+        # extract the dataset id by inferring from the model names
+        # if such extraction fails, the dataset id will not be included in the graph title
+        dataset_id = ""
+        if model_path:
+            if "001" in model_path:
+                dataset_id = DATASET_ID_FD001
+            elif "002" in model_path:
+                dataset_id = DATASET_ID_FD002
+            elif "003" in model_path:
+                dataset_id = DATASET_ID_FD003
+            elif "004" in model_path:
+                dataset_id = DATASET_ID_FD004
+
+        # plotting
+        x = list(range(len(prediction_array)))
+
+        plt.figure(figsize=DEFAULT_FIGURE_SIZE)
+        plt.plot(
+            x,
+            ground_truth_sorted,
+            color="red",
+            label="Actual RUL",
+            linewidth=LINE_WIDTH,
+        )
+        plt.plot(
+            x,
+            prediction_array_cleaned_sorted,
+            color="purple",
+            label=f"Predicted RUL, RMSE: {rmse:.4f}, MAPE: {mape:.4f}",
+            linewidth=LINE_WIDTH,
+        )
+
+        plt.xlabel("Engine Number", fontweight="bold", fontsize=22)
+        plt.ylabel("RUL", fontweight="bold", fontsize=22)
+        plt.title(
+            "Actual and Predicted RUL" + ("" if not dataset_id else f", {dataset_id}"),
+            fontweight="bold",
+            fontsize=26,
+        )
+        plt.legend(loc="lower right", fontsize=18)
+        plt.gca().spines["top"].set_visible(False)
+        plt.gca().spines["right"].set_visible(False)
+        plt.grid(True)
+        plt.savefig(figure_dest, dpi=300)
+        plt.tick_params(axis="both", which="major", labelsize=15)
+        plt.tight_layout()
+
+        plt.show()
 
     return rmse, mape
 

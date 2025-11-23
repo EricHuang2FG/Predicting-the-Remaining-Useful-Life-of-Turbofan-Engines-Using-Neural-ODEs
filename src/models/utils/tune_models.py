@@ -199,8 +199,9 @@ if __name__ == "__main__":
         "regressor_dimension": 128,
         "dropout": 0.2,
     }
-    dropout_rate_sweep(
+    hidden_dimensions_sweep(
         MODEL_TYPE_NODE,
-        "CMAPSS/train_FD001.txt",
+        "CMAPSS/train_FD002.txt",
         settings=settings,
+        dimension_type=DIMENSION_TYPE_HIDDEN,
     )
