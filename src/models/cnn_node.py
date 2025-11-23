@@ -28,7 +28,7 @@ class CNN_ODE(nn.Module):
                 stride=cnn_stride,
                 padding=cnn_padding,
             ),
-            nn.ReLU(),
+            nn.SiLU(),
             nn.Dropout(dropout),
         )
 

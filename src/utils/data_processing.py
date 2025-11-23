@@ -65,11 +65,15 @@ def preprocess_test_data(
     rul_path: str,
     scaler: StandardScaler,
     window_size: int = DEFAULT_WINDOW_SIZE,
+    max_rul: int = 100
 ) -> tuple[torch.FloatTensor, torch.FloatTensor]:
     # similar to preprocess_trainng_data() but runs on test data and real RUL
     # also only takes the last window of each engine test
     test_data: np.ndarray = np.loadtxt(test_data_path)
     rul_data: np.ndarray = np.loadtxt(rul_path)
+
+    # perform rul segmentation
+    rul_data = np.minimum(max_rul, rul_data)
 
     test_sequence: list = []
 

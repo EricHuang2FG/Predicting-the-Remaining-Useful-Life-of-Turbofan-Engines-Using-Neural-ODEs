@@ -13,7 +13,7 @@ from src.utils.constants import (
 
 
 def main() -> None:
-    x, y, scaler = preprocess_training_data("CMAPSS/train_FD002.txt")
+    x, y, scaler = preprocess_training_data("CMAPSS/train_FD004.txt")
 
     # code for training a model
     # (x_train, x_validation), (y_train, y_validation) = split_tensors_by_ratio(
@@ -22,7 +22,7 @@ def main() -> None:
 
     # train_model(
     #     MODEL_TYPE_CNN_NODE,
-    #     "models/cnn_ode.FD002.v1.model",
+    #     "models/cnn_ode.FD004.v1.model",
     #     x_train,
     #     y_train,
     #     settings=OPTIMIZED_CNN_NODE_SETTINGS,
@@ -42,7 +42,7 @@ def main() -> None:
 
     # code for testing a model
     x_test, y_test = preprocess_test_data(
-        "CMAPSS/test_FD002.txt", "CMAPSS/RUL_FD002.txt", scaler
+        "CMAPSS/test_FD004.txt", "CMAPSS/RUL_FD004.txt", scaler
     )
 
     evaluate_model(
@@ -50,9 +50,9 @@ def main() -> None:
         y_test,
         MODEL_TYPE_CNN_NODE,
         None,
-        "models/cnn_ode.FD002.v1.model",
+        "models/cnn_ode.FD004.v1.model",
         settings=OPTIMIZED_CNN_NODE_SETTINGS,
-        figure_dest="figures/plot_cnn_node_FD002.pdf",
+        figure_dest="figures/plot_cnn_node_FD004.pdf",
     )
 
     # evaluate_model(
