@@ -1,32 +1,17 @@
 import torch
 import torch.nn as nn
 from torchdiffeq import odeint
+from src.models.node import NeuralODE
 
 
-class NeuralODE(nn.Module):
-
-    def __init__(self, dimension: int = 64) -> None:
-        super().__init__()
-        self.linear_stack = nn.Sequential(
-            nn.Linear(dimension, dimension), nn.Tanh(), nn.Linear(dimension, dimension)
-        )
-
-        # force some weights at initialization
-        for layer in self.linear_stack:
-            if isinstance(layer, nn.Linear):
-                nn.init.normal_(layer.weight, mean=0, std=0.1)
-                nn.init.constant_(layer.bias, 0)
-
-    def forward(self, t, theta):
-        output = self.linear_stack(theta)
-        output = torch.clamp(output, -10.0, 10.0)
-        return output
-
-
-class ODE(nn.Module):
+class CNN_ODE(nn.Module):
     def __init__(
         self,
         input_dimension: int = 24,
+        cnn_num_kernals: int = 36,
+        cnn_kernal_size: int = 3,
+        cnn_stride: int = 1,
+        cnn_padding: int = 1,
         hidden_dimension: int = 64,
         encoder_dimension: int = 128,
         regressor_dimension: int = 32,
@@ -35,9 +20,21 @@ class ODE(nn.Module):
     ) -> None:
         super().__init__()
 
+        self.cnn = nn.Sequential(
+            nn.Conv1d(
+                in_channels=input_dimension,
+                out_channels=cnn_num_kernals,
+                kernel_size=cnn_kernal_size,
+                stride=cnn_stride,
+                padding=cnn_padding,
+            ),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+
         self.encoder = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(input_dimension * sequence_length, encoder_dimension),
+            nn.Linear(sequence_length * cnn_num_kernals, encoder_dimension),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(encoder_dimension, hidden_dimension),
@@ -54,7 +51,9 @@ class ODE(nn.Module):
 
     def forward(self, x, t_span=torch.tensor([0.0, 1.0])):
         # get initial state
-        theta_0 = self.encoder(x)
+        cnn_in = x.transpose(1, 2)
+        cnn_out = self.cnn(cnn_in)
+        theta_0 = self.encoder(cnn_out)
         theta_final = odeint(self.ode, theta_0, t_span, method="dopri5")[-1]
         prediction = self.regressor(theta_final).squeeze()
 

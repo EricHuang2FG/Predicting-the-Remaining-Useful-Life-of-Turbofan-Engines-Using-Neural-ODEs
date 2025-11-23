@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset, DataLoader
 
 from src.models.node import ODE
+from src.models.cnn_node import CNN_ODE
 from src.utils.constants import (
     DATASET_ID_FD001,
     DATASET_ID_FD002,
@@ -48,15 +49,20 @@ def initialize_model(
             dropout=settings["dropout"],
             sequence_length=DEFAULT_WINDOW_SIZE,
         )
-    # default value same for now, but will change later
-    return ODE(
-        input_dimension=NUM_SETTINGS_AND_SENSOR_READINGS,
-        hidden_dimension=settings["hidden_dimension"],
-        encoder_dimension=settings["encoder_dimension"],
-        regressor_dimension=settings["regressor_dimension"],
-        dropout=settings["dropout"],
-        sequence_length=DEFAULT_WINDOW_SIZE,
-    )
+
+    if model_class == MODEL_TYPE_CNN_NODE:
+        return CNN_ODE(
+            input_dimension=NUM_SETTINGS_AND_SENSOR_READINGS,
+            cnn_num_kernals=settings["cnn_num_kernals"],
+            cnn_kernal_size=settings["cnn_kernal_size"],
+            cnn_stride=settings["cnn_stride"],
+            cnn_padding=settings["cnn_padding"],
+            hidden_dimension=settings["hidden_dimension"],
+            encoder_dimension=settings["encoder_dimension"],
+            regressor_dimension=settings["regressor_dimension"],
+            dropout=settings["dropout"],
+            sequence_length=DEFAULT_WINDOW_SIZE,
+        )
 
 
 def train_model(
