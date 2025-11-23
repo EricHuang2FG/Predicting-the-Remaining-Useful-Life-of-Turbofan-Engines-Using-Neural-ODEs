@@ -35,3 +35,16 @@ OPTIMIZED_NODE_SETTINGS: dict = {
     "regressor_dimension": 128,
     "dropout": 0.0,
 }
+OPTIMIZED_CNN_NODE_SETTINGS: dict = {
+    "batch_size": 128,
+    "epochs": 25,
+    "lr": 0.001,
+    "cnn_num_kernals": 36,
+    "cnn_kernal_size": 3,
+    "cnn_stride": 1,
+    "cnn_padding": 1,
+    "hidden_dimension": 128,
+    "encoder_dimension": 128,
+    "regressor_dimension": 128,
+    "dropout": 0.0,
+}
