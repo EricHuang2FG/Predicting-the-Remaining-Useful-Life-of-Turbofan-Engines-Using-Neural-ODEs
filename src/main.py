@@ -12,12 +12,12 @@ def main() -> None:
 
     # code for training a model
     # (x_train, x_validation), (y_train, y_validation) = split_tensors_by_ratio(
-    #     x, y, ratio=0.8
+    #     x, y, ratio=0.9
     # )
 
     # train_model(
     #     MODEL_TYPE_NODE,
-    #     "models/ode.FD001.v4.model",
+    #     "models/ode.FD003.v2.model",
     #     x_train,
     #     y_train,
     #     settings=OPTIMIZED_NODE_SETTINGS,
@@ -34,8 +34,9 @@ def main() -> None:
         y_test,
         MODEL_TYPE_NODE,
         None,
-        "models/ode.FD003.v1.model",
+        "models/ode.FD003.v2.model",
         settings=OPTIMIZED_NODE_SETTINGS,
+        figure_dest="figures/plot_node_FD003.pdf",
     )
 
 
