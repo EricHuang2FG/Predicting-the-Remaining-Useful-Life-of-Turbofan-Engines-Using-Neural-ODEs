@@ -31,6 +31,8 @@ class NeuralODE(nn.Module):
 class ODE(nn.Module):
     #still need to tune the parameters of the neural netowrk that is solving the derivatives at each point of the ODE
     def __init__(self, input_dimension=24, hidden_dimension=64, dropout = 0.2, sequence_length=40):
+        super().__init__()
+        
         self.encoder = nn.Sequential(
             nn.Flatten(),
             nn.Linear(input_dimension * sequence_length, 128),
