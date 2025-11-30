@@ -225,12 +225,13 @@ def evaluate_model(
             label="Actual RUL",
             linewidth=LINE_WIDTH,
         )
-        plt.plot(
+        plt.scatter(
             x,
             prediction_array_cleaned_sorted,
             color="purple",
             label=f"Predicted RUL, RMSE: {rmse:.4f}, MAPE: {mape:.4f}",
-            linewidth=LINE_WIDTH,
+            s=16
+            # linewidth=LINE_WIDTH,
         )
 
         plt.xlabel("Engine Number", fontweight="bold", fontsize=22)
