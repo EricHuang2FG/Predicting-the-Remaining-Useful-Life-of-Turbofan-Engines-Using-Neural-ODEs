@@ -14,6 +14,7 @@ MODEL_TYPE_CNN_NODE: str = "cnn_node"
 DIMENSION_TYPE_HIDDEN: str = "hidden_dimension"
 DIMENSION_TYPE_ENCODER: str = "encoder_dimension"
 DIMENSION_TYPE_REGRESSOR: str = "regressor_dimension"
+DIMENSION_TYPE_CNN_NUM_KERNALS: str = "cnn_num_kernals"
 
 DEFAULT_WINDOW_SIZE: int = 40
 DEFAULT_NETWORK_SETTINGS: dict = {
@@ -35,16 +36,17 @@ OPTIMIZED_NODE_SETTINGS: dict = {
     "regressor_dimension": 128,
     "dropout": 0.0,
 }
+
 OPTIMIZED_CNN_NODE_SETTINGS: dict = {
     "batch_size": 128,
     "epochs": 25,
     "lr": 0.001,
-    "cnn_num_kernals": 12,
+    "cnn_num_kernals": 20,
     "cnn_kernal_size": 3,
     "cnn_stride": 1,
     "cnn_padding": 1,
     "hidden_dimension": 128,
     "encoder_dimension": 128,
     "regressor_dimension": 128,
-    "dropout": 0.0,
+    "dropout": 0.2,
 }

@@ -9,10 +9,13 @@ from src.utils.data_processing import (
 from src.models.utils.model_utils import train_model, evaluate_model
 from src.utils.constants import (
     DEFAULT_NETWORK_SETTINGS,
+    OPTIMIZED_CNN_NODE_SETTINGS,
     MODEL_TYPE_NODE,
+    MODEL_TYPE_CNN_NODE,
     DIMENSION_TYPE_ENCODER,
     DIMENSION_TYPE_HIDDEN,
     DIMENSION_TYPE_REGRESSOR,
+    DIMENSION_TYPE_CNN_NUM_KERNALS,
 )
 
 
@@ -71,6 +74,7 @@ def hidden_dimensions_sweep(
         DIMENSION_TYPE_HIDDEN,
         DIMENSION_TYPE_ENCODER,
         DIMENSION_TYPE_REGRESSOR,
+        DIMENSION_TYPE_CNN_NUM_KERNALS,
     ]:
         raise ValueError(f"Unexpected dimension type given: {dimension_type}")
     x, y, _ = preprocess_training_data(training_data_directory)
@@ -81,7 +85,13 @@ def hidden_dimensions_sweep(
 
     curr_settings = settings.copy()
 
-    candidate_hds = [32, 64, 128]
+    candidate_hds = (
+        [32, 64, 128]
+        if dimension_type != DIMENSION_TYPE_CNN_NUM_KERNALS
+        else [2, 3, 4]
+        # else [20, 24, 28]
+        # else [4, 8, 12, 16, 20]
+    )
     losses = []
     for hd in candidate_hds:
         curr_settings[dimension_type] = hd
@@ -171,17 +181,6 @@ def dropout_rate_sweep(
     )
 
 
-# def visualize():
-#     # just to test out what the final thing will look like
-#     x, y, scaler = preprocess_training_data("CMAPSS/train_FD001.txt")
-#     x_test, y_test = preprocess_test_data(
-#         "CMAPSS/test_FD001.txt", "CMAPSS/RUL_FD001.txt", scaler
-#     )
-#     # can replace with any train_model_XXX function, need to remove trained_loss for other train_model_XXX functions
-#     trained_model, trained_loss = node.train_model_tunedor(0.1, 96, x, y)
-#     node.evaluate_model_tune_visualize(x_test, y_test, trained_model)
-
-
 if __name__ == "__main__":
     # general order of tuning: learning rate, hidden dimensions, dropout rate
     # important to hold seed constant as then can compare between different neural networks with variations in their parameters
@@ -190,18 +189,11 @@ if __name__ == "__main__":
     np.random.seed(seed)
     random.seed(seed)
 
-    settings: dict = {
-        "batch_size": 128,
-        "epochs": 10,
-        "lr": 0.001,
-        "hidden_dimension": 64,
-        "encoder_dimension": 128,
-        "regressor_dimension": 128,
-        "dropout": 0.2,
-    }
-    hidden_dimensions_sweep(
-        MODEL_TYPE_NODE,
+    settings: dict = OPTIMIZED_CNN_NODE_SETTINGS
+    settings["epochs"] = 10 # 10 epochs for tuning suffice
+
+    dropout_rate_sweep(
+        MODEL_TYPE_CNN_NODE,
         "CMAPSS/train_FD002.txt",
         settings=settings,
-        dimension_type=DIMENSION_TYPE_HIDDEN,
     )
