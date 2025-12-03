@@ -110,8 +110,8 @@ def split_tensors_by_ratio(
     tuple[torch.FloatTensor, torch.FloatTensor],
 ]:
     # slice each tensor such that it gives a tuple
-    # containing a tensor with the first ratio fraction of elements of the original tensor
-    # and a tensor that contains the remaining elements of the original tensor
+    # containing a tensor with the first ratio fraction of elements of the original tensor which will be used for training the model
+    # and a tensor that contains the remaining elements of the origina training tensor used for validating said model
     # the same is performed on tensor_a and tensor_b, and the results are returned as a tuple
 
     # for our use case, tensor_a and tensor_b have the same on its first dimension

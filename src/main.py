@@ -30,6 +30,7 @@ def main() -> None:
     #     expected_validation_output=y_validation,
     # )
 
+    # evaluate both NODE and CNN_NODE on this dataset to compare
     # train_model(
     #     MODEL_TYPE_NODE,
     #     "models/ode.FD003.v2.model",
