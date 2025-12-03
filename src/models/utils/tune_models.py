@@ -34,6 +34,8 @@ def learning_rate_sweep(
 
     candidate_lrs = [0.1, 0.01, 0.005, 0.001, 0.0003]
     losses = []
+    # for the sake of speed of training, evaluate based on 0.3 of train data
+    # simply use the weights from the last epoch
     for lr in candidate_lrs:
         curr_settings["lr"] = lr
         model = train_model(
@@ -44,6 +46,7 @@ def learning_rate_sweep(
             settings=curr_settings,
         )
         losses.append(
+            # only look at rmse for evaluation of model for specific parameter value
             evaluate_model(
                 x_validation,
                 y_validation,
@@ -146,6 +149,7 @@ def dropout_rate_sweep(
     )  # error/difference between the predicted value and the corresponding training data value
     for dor in candidate_dor:
         curr_settings["dropout"] = dor
+        # trained_loss returns average loss per batch for last epoch
         trained_model, trained_loss = train_model(
             model_class,
             "models/tunning_dummy.model",
@@ -154,16 +158,17 @@ def dropout_rate_sweep(
             settings=curr_settings,
             return_loss=True,
         )
-        rmse, _ = evaluate_model(
-            x_validation,
-            y_validation,
-            model_class,
-            trained_model,
-            None,
-            settings=curr_settings,
-            plot=False,
+        losses.append(
+            evaluate_model(
+                x_validation,
+                y_validation,
+                model_class,
+                trained_model,
+                None,
+                settings=curr_settings,
+                plot=False,
+            )[0]
         )
-        losses.append(rmse)
         total_loss.append(trained_loss)
 
     plt.figure(figsize=(12, 9))
@@ -174,7 +179,6 @@ def dropout_rate_sweep(
     plt.grid(True)
     plt.show()
 
-    # want to see how the validation loss (test data) compares with total loss (train data)
     # general rule of thumb: if training loss << validation loss, increase dropout because overfitting, vice versa
     print(
         f"total losses from training set after 25 epochs {[round(l, 6) for l in total_loss]}"
