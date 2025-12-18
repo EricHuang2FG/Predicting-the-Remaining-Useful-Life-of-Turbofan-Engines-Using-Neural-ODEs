@@ -230,14 +230,15 @@ def evaluate_model(
             prediction_array_cleaned_sorted,
             color="purple",
             label=f"Predicted RUL, RMSE: {rmse:.4f}, MAPE: {mape:.4f}",
-            s=16
+            s=16,
             # linewidth=LINE_WIDTH,
         )
 
         plt.xlabel("Engine Number", fontweight="bold", fontsize=22)
         plt.ylabel("RUL", fontweight="bold", fontsize=22)
         plt.title(
-            "Actual and Predicted RUL" + ("" if not dataset_id else f", {dataset_id}"),
+            f"Actual and Predicted RUL of {"CNN-NODE" if model_class == "cnn_node" else "NODE"}"
+            + ("" if not dataset_id else f", {dataset_id}"),
             fontweight="bold",
             fontsize=26,
         )

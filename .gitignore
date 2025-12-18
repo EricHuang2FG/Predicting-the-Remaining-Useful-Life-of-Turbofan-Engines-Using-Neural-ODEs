@@ -1,7 +1,19 @@
 CMAPSS/*.pdf
 CMAPSS/*.txt
 
-models/*.model
+models/cnn_ode.FD001.v1.model
+models/cnn_ode.FD002.v1.model
+models/cnn_ode.FD003.v1.model
+models/cnn_ode.FD004.v1.model
+models/ode.FD001.v3.model
+models/ode.FD001.v4.model
+models/ode.FD002.v1.model
+models/ode.FD002.v2.model
+models/ode.FD003.v1.model
+models/ode.FD004.v1.model
+models/ode.model
+models/ode.v2.model
+models/tunning_dummy.model
 
 .venv/
 .DS_Store
