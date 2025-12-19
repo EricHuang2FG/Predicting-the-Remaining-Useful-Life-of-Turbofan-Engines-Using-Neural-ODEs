@@ -50,7 +50,7 @@ Implementing a sliding window for the data set allows a better extraction of loc
 
 ### Neural ODE
 The code for creating a Neural ODE can be found in `src/models/node.py`.
-Inheiriting from the nn.Module base class, the `NeuralODE` class creates the foundational outline of a neural network by defining the derivative funtion $\frac{d \mathbf{h}(t)}{dt} = f(\mathbf{h}(t), t, \theta)$ that follows a general feed foreward architecture to generate the derivative for each state $h(t)$ over a continuous time interval. The `ODE` class performs numerical integration by calling the `NeuralODE` class to get the derivatives and evolving the current state to get the predicted values. The Dormand-Prince-5 (DOPRI-5) numerical method also known as RK4 is widely used for integrating ODEs where high precision is needed and adaptive time steps are used.
+Inheiriting from the nn.Module base class, the `NeuralODE` class creates the foundational outline of a neural network by defining the derivative funtion $\frac{d \mathbf{h}(t)}{dt} = f(\mathbf{h}(t), t, \theta)$ that follows a general feed foreward architecture to generate the derivative for each state $h(t)$ over a continuous time interval. The `ODE` class performs numerical integration by calling the `NeuralODE` class to get the derivatives and evolving the current state to get the predicted values. The Dormand-Prince-5 (DOPRI-5) numerical method also known as RK45 is widely used for integrating ODEs where high precision is needed and adaptive time steps are used.
 
 
 ### CNN-Neural ODE

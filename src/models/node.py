@@ -61,7 +61,7 @@ class ODE(nn.Module):
         # get initial state
         theta_0 = self.encoder(x)
         
-        # Using the dopri-5 solver, the ODE solution is numerically integrated over the time span
+        # Using the DOPRI-5 solver, the ODE solution is numerically integrated over the time span
         # by going through many forward passes of the Neural ODE with adaptive step sizes
         theta_final = odeint(self.ode, theta_0, t_span, method="dopri5")[-1]
         prediction = self.regressor(theta_final).squeeze()
