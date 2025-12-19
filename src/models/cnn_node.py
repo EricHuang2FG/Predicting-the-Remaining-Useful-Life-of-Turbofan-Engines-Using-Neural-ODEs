@@ -34,7 +34,7 @@ class CNN_ODE(nn.Module):
         )
 
         # transforms the CNN convolution results into one long vector theta_0
-        # uesd by the Neural ODE as initial state
+        # used by the Neural ODE as the initial state
         self.encoder = nn.Sequential(
             nn.Flatten(),
             nn.Linear(sequence_length * cnn_num_kernals, encoder_dimension),

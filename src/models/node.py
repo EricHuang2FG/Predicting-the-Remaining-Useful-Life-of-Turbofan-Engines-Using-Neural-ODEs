@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torchdiffeq import odeint
 
-# inherits from the nn.Module base class, forms foundational layout of neural network
+# inherits from the nn.Module base class, forms foundational outline of neural network
 # this neural network defines the derivative function f(θ,t)
 # models how the state θ changes infinitessimally over time
 # the hidden layers represent the continuous evolution of state overtime
