@@ -81,12 +81,14 @@ def train_model(
 
     # Mean Squared Error Loss, difference between prediction and true values
     loss_function = nn.MSELoss()
-    # use Adam algorithm to update weights to minimize loss
+    # use Adam Algorithm to update weights to minimize loss
     optimizer = torch.optim.Adam(model.parameters(), lr=settings["lr"])
 
     dataset = TensorDataset(input_data, expected_output)
-    dataloader = DataLoader(dataset, batch_size=settings["batch_size"], shuffle=True) # feeds batches of data to train,
-                                                                                      # data is randomly ordered at beginning of each epoch
+    dataloader = DataLoader(
+        dataset, batch_size=settings["batch_size"], shuffle=True
+    )  # feeds batches of data to train,
+    # data is randomly ordered at beginning of each epoch
     model.train()
 
     lowest_validation_loss = float("inf")
@@ -100,19 +102,21 @@ def train_model(
         # going through each pass of the training set (epoch) in batches
         for x, y in dataloader:
             optimizer.zero_grad()  # zero all the gradients first to reset model weights, only want the error associated with current batch
-            predictions = model(x)  # CALLS MODEL TO GET THE MODEL'S PREDICTION FOR THE GIVEN SENSOR VALUES
-                                    # goes through a forward pass (automatically calls forward fucntion of the model type)
+            predictions = model(x)
+            # CALLS MODEL TO GET THE MODEL'S PREDICTION FOR THE GIVEN SENSOR VALUES
+            # goes through a forward pass (automatically calls forward fucntion of the model type)
             loss = loss_function(predictions, y)
-            loss.backward()  # BACK PROPAGATION figures out how much each parameter contributes to the final loss, take derivatives as look at changes
+            loss.backward()
+            # BACK PROPAGATION figures out how much each parameter contributes to the final loss, take derivatives as look at changes
             # calculates gradient of the loss function wrt each parameter
             # hidden layers creates composite functions, thus require chain rule to find impact of earlier parameters on loss
             # chain rule takes into account gradient calculated at a later layer to find the gradient for an earlier layer
-            
+
             # for Neural ODEs, this is too complicated as infinite dimensions
             # thus, use Adjoint Method that involves integrating another ODE backwards in time to find the assocaiated gradients with each parameter
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()  # updates the parameters/weights taking into account gradient values
-                              # size of each step is determined by learning rate
+            # size of each step is determined by learning rate
             total_loss_per_epoch += loss.item()
 
         print(
@@ -122,7 +126,7 @@ def train_model(
         # check using validation set to see if early stopping is required
         if input_validation_data is not None and expected_validation_output is not None:
             model.eval()
-            with torch.no_grad(): # autograd disabled
+            with torch.no_grad():  # autograd disabled
                 validation_predictions = model(input_validation_data)
                 validation_loss = loss_function(
                     validation_predictions, expected_validation_output
@@ -134,7 +138,9 @@ def train_model(
             ):  # if it's better, to a 4 decimal places tolerance
                 lowest_validation_loss = validation_loss
                 num_no_improvement_epochs = 0
-                optimal_state = model.state_dict() # saves a copy of best parameters at this point
+                optimal_state = (
+                    model.state_dict()
+                )  # saves a copy of best parameters at this point
             else:
                 num_no_improvement_epochs += 1
 
@@ -142,7 +148,9 @@ def train_model(
                 print(
                     f"Early stopping at [{epoch + 1}/{epochs}], validation loss: {(lowest_validation_loss):.6f}"
                 )
-                model.load_state_dict(optimal_state) # restores the best model parameters
+                model.load_state_dict(
+                    optimal_state
+                )  # restores the best model parameters
                 break
 
     if optimal_state is not None:
@@ -265,5 +273,3 @@ def evaluate_model(
         plt.show()
 
     return rmse, mape
-
-
