@@ -1,4 +1,4 @@
-# Predicting the Remaining Useful Life of Jet Turbofan Engines Using Depth-Continuous Neural ODEs
+# Predicting the Remaining Useful Life (RUL) of Jet Turbofan Engines Using Depth-Continuous Neural ODEs
 
 ## Introduction
 
