@@ -254,7 +254,7 @@ def evaluate_model(
             # linewidth=LINE_WIDTH,
         )
 
-        plt.xlabel("Condition Number", fontweight="bold", fontsize=22)
+        plt.xlabel("Engines", fontweight="bold", fontsize=22)
         plt.ylabel("RUL", fontweight="bold", fontsize=22)
         plt.title(
             f"Actual and Predicted RUL of {"CNN-NODE" if model_class == "cnn_node" else "NODE"}"
@@ -267,7 +267,7 @@ def evaluate_model(
         plt.gca().spines["right"].set_visible(False)
         plt.grid(True)
         plt.savefig(figure_dest, dpi=300)
-        plt.tick_params(axis="both", which="major", labelsize=15)
+        plt.tick_params(axis="both", which="major", labelsize=22)
         plt.tight_layout()
 
         plt.show()
