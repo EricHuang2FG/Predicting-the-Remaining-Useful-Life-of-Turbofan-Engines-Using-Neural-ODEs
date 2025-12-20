@@ -26,6 +26,20 @@ def load_model_from_file(
     path: str = "models/ode.model",
     settings: dict = DEFAULT_NETWORK_SETTINGS,
 ) -> nn.Module:
+    """initialize a PyTorch model and load the weights stored in a file at path
+
+    The PyTorch model is first initialized with passed-in settings using initialize_model(),
+    then, it is loaded with weights stored as a file at path
+
+    Args:
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        path (str): file path of the file storing the weights.
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+
+    Returns:
+        nn.Module: model loaded with weights stored in the file at path.
+    """
+
     # load the saved weights from file path into a new instance of a model
     model: nn.Module = initialize_model(model_class, settings=settings)
     model.load_state_dict(torch.load(path))
@@ -36,6 +50,19 @@ def load_model_from_file(
 def initialize_model(
     model_class: str, settings: dict = DEFAULT_NETWORK_SETTINGS
 ) -> nn.Module:
+    """initialize a PyTorch model with passed-in settings
+
+    An empty PyTorch model (i.e. model with non-determined weights and biases) of model_class with
+    passed-in settings is initialized and returned
+
+    Args:
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+
+    Returns:
+        nn.Module: initialized model of model_class.
+    """
+
     if model_class not in [MODEL_TYPE_NODE, MODEL_TYPE_CNN_NODE]:
         raise ValueError(f"Unknown model_class: {model_class}")
     # for the settings dictionary, we use [] access because
@@ -77,6 +104,25 @@ def train_model(
     input_validation_data: torch.FloatTensor = None,  # pass in if early stopping is desired
     expected_validation_output: torch.FloatTensor = None,
 ):
+    """train a PyTorch model of model_class
+
+    Train a PyTorch model of model_class with passed-in settings. The weights of the trained model is
+    saved at dest_path. If input_validation_data and expected_validation_output are not None,
+    then early stopping is employed.
+
+    Args:
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        dest_path (str): destination location where the trained weights are to be saved
+        input_data (torch.FloatTensor): data for training
+        expected_output (torch.FloatTensor): labels for training data
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+        return_loss (bool): whether or not validation loss should be returned by the function.
+        input_validation_data (torch.FloatTensor): validation data.
+        expected_validation_output (torch.FloatTensor): labels for validation data
+
+    Returns:
+        nn.Module: trained model. If return_loss is true, the average training loss for the last epoch is returned in a tuple
+    """
     model = initialize_model(model_class, settings=settings)
 
     # Mean Squared Error Loss, difference between prediction and true values
@@ -103,16 +149,16 @@ def train_model(
         for x, y in dataloader:
             optimizer.zero_grad()  # zero all the gradients first to reset model weights, only want the error associated with current batch
             predictions = model(x)
-            # CALLS MODEL TO GET THE MODEL'S PREDICTION FOR THE GIVEN SENSOR VALUES
+            # calls model to get the mode's prediction for the given input values
             # goes through a forward pass (automatically calls forward fucntion of the model type)
             loss = loss_function(predictions, y)
             loss.backward()
-            # BACK PROPAGATION figures out how much each parameter contributes to the final loss, take derivatives as look at changes
+            # back propagation: figures out how much each parameter contributes to the final loss, take derivatives as look at changes
             # calculates gradient of the loss function wrt each parameter
             # hidden layers creates composite functions, thus require chain rule to find impact of earlier parameters on loss
             # chain rule takes into account gradient calculated at a later layer to find the gradient for an earlier layer
 
-            # for Neural ODEs, this is too complicated as infinite dimensions
+            # for Neural ODEs, this is too complicated due to its infinite dimensions
             # thus, use Adjoint Method that involves integrating another ODE backwards in time to find the assocaiated gradients with each parameter
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()  # updates the parameters/weights taking into account gradient values
@@ -175,6 +221,26 @@ def evaluate_model(
     plot: bool = True,
     figure_dest: str = "figures/untitled_figure.pdf",
 ) -> tuple[float, float]:
+    """evaluates a PyTorch model
+
+    Evaluates a PyTorch model of model_class by computing the RMSE and MAPE of the predicted RUL with the
+    expected_output. The model is either directly passed in as an argument, or loaded as a file.
+    If plot is True, graphs that visualizes predicted RULs and the corresponding expected_output will be plotted,
+    and saved at figure_dest
+
+    Args:
+        input_data (torch.FloatTensor): data for evaluation.
+        expected_output (torch.FloatTensor): ground-truth RULs for evaluation.
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        model (nn.Module): PyTorch model of the model to be evaluated.
+        model_path (str): file path containing the weights of the model to be evaluated.
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+        plot (bool): whether or not graphs visualizing the predicted and actual RULs should be produced
+        figure_dest (str): if plot is True, the destination location where the plotted graph should be saved
+
+    Returns:
+        tuple[float, float]: a tuple of the RMSE and MAPE values of the model when evaluated on input_data
+    """
     if not model:
         model = load_model_from_file(model_class, path=model_path, settings=settings)
     model.eval()

@@ -24,6 +24,20 @@ def learning_rate_sweep(
     training_data_directory: str,
     settings: dict = DEFAULT_NETWORK_SETTINGS,
 ):
+    """sweep through candidate learning rates and produce a graph of validation loss across each learning rate
+
+    Defines a list of candidate learning rates and train a model using each. Then, evaluate the model using
+    the validation set, compute the validation RMSE loss, and plot a graph comparing validation loss with
+    the candidate learning rate.
+
+    Args:
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        training_data_directory (str): file path of the training data.
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+
+    Returns:
+        None
+    """
     x, y, _ = preprocess_training_data(training_data_directory)
 
     (x_train, x_validation), (y_train, y_validation) = split_tensors_by_ratio(
@@ -73,6 +87,21 @@ def hidden_dimensions_sweep(
     settings: dict = DEFAULT_NETWORK_SETTINGS,
     dimension_type: str = DIMENSION_TYPE_HIDDEN,
 ):
+    """sweep through candidate hidden dimensions and produce a graph of validation loss across each hidden dimension
+
+    Defines a list of candidate hidden dimensions depending on dimension_type, and train a model using each.
+    Then, evaluate the model using the validation set, compute the validation RMSE loss, and plot a graph
+    comparing validation loss with the candidate hidden dimension.
+
+    Args:
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        training_data_directory (str): file path of the training data.
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+        dimension_type (str): the type of hidden dimension to be sweeped
+
+    Returns:
+        None
+    """
     if dimension_type not in [
         DIMENSION_TYPE_HIDDEN,
         DIMENSION_TYPE_ENCODER,
@@ -130,6 +159,20 @@ def dropout_rate_sweep(
     training_data_directory: str,
     settings: dict = DEFAULT_NETWORK_SETTINGS,
 ):
+    """sweep through candidate dropout rates and produce a graph of validation loss across each dropout rate
+
+    Defines a list of candidate dropout rates and train a model using each. Then, evaluate the model using
+    the validation set, compute the validation RMSE loss, and plot a graph comparing validation loss with
+    the candidate dropout rate.
+
+    Args:
+        model_class (str): class of the model. Either MODEL_TYPE_NODE or MODEL_TYPE_CNN_NODE.
+        training_data_directory (str): file path of the training data.
+        settings (dict): a dictionary of settings of the particular model belonging to model_class.
+
+    Returns:
+        None
+    """
     x, y, _ = preprocess_training_data(training_data_directory)
 
     (x_train, x_validation), (y_train, y_validation) = split_tensors_by_ratio(
@@ -194,7 +237,7 @@ if __name__ == "__main__":
     random.seed(seed)
 
     settings: dict = OPTIMIZED_CNN_NODE_SETTINGS
-    settings["epochs"] = 10 # 10 epochs for tuning suffice
+    settings["epochs"] = 10  # 10 epochs for tuning suffice
 
     dropout_rate_sweep(
         MODEL_TYPE_CNN_NODE,

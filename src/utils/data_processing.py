@@ -10,8 +10,24 @@ from src.utils.constants import NUM_SETTINGS_AND_SENSOR_READINGS, DEFAULT_WINDOW
 def preprocess_training_data(
     file_path: str, window_size: int = DEFAULT_WINDOW_SIZE, max_rul: int = 100
 ) -> tuple[torch.FloatTensor, torch.FloatTensor, StandardScaler]:
+    """preprocess CMAPSS data for training
+
+    Preprocess raw CMAPSS data into PyTorch tensors such that they are training-ready. Three main steps are carried out
+    in the pre-processing. 1) z-score standardization, 2) RUL clipping, which clips all RUL to be less than or equal to 100,
+    and, 3) sliding time window processing, which packages the data into time-series of size 40
+
+    Args:
+        file_path (str): path to the raw CMAPSS data.
+        window_size (int): window size of the sliding time window. Set to 40 for this experiment.
+        max_rul (int): threshold for RUL clipping. Set to 100 for this experiment
+
+    Returns:
+        tuple[torch.FloatTensor, torch.FloatTensor, StandardScalar]: a tuple of the processed input data tensor,
+        label tensor, and a record of the scaling parameters used for z-score standardization
+    """
+
     # data has the size (num_lines, 26)
-    # column 1: engine number
+    # column 1: unit number
     # column 2: cycle count
     # column 3 to 5: operational settings
     # column 6 to end: sensor measurements
@@ -65,8 +81,26 @@ def preprocess_test_data(
     rul_path: str,
     scaler: StandardScaler,
     window_size: int = DEFAULT_WINDOW_SIZE,
-    max_rul: int = 100
+    max_rul: int = 100,
 ) -> tuple[torch.FloatTensor, torch.FloatTensor]:
+    """preprocess CMAPSS data for testing
+
+    Preprocess raw CMAPSS data into PyTorch tensors for model evaluation. It follows the same processes as
+    preprocess_training_data(). In particular, the z-score standardization is done with the same scaling
+    parameters as those used to preprocess the training data
+
+    Args:
+        test_data_path (str): path to the raw CMAPSS test data.
+        rul_path (str): path to the CMAPSS file holding the ground-truth RUL corresponding to the test data.
+        scalar (StandardScaler): record of scalar used to preprocess the training data
+        window_size (int): window size of the sliding time window. Set to 40 for this experiment.
+        max_rul (int): threshold for RUL clipping. Set to 100 for this experiment
+
+    Returns:
+        tuple[torch.FloatTensor, torch.FloatTensor]: a tuple of the processed input data tensor, and the
+        ground truth RUL tensor
+    """
+
     # similar to preprocess_trainng_data() but runs on test data and real RUL
     # also only takes the last window of each engine test
     test_data: np.ndarray = np.loadtxt(test_data_path)
@@ -109,6 +143,31 @@ def split_tensors_by_ratio(
     tuple[torch.FloatTensor, torch.FloatTensor],
     tuple[torch.FloatTensor, torch.FloatTensor],
 ]:
+    """split and return two tensors by ratio
+
+    Each of tensor_a and tensor_b are splitted into two tensors with the specified ratio. The splitted
+    tensor_a and tensor_b are stored in distinct tuples, which are together packaged into one tuple and
+    returned.
+
+    Args:
+        tensor_a (torch.FloatTensor): first tensor to be splitted.
+        tensor_b (torch.FloatTensor): second tensor to be splitted.
+        ratio (float): the ratio at which the tensors should be splitted
+
+    Returns:
+        tuple[
+            tuple[
+                torch.FloatTensor,
+                torch.FloatTensor
+            ],
+            tuple[
+                torch.FloatTensor,
+                torch.FloatTensor
+            ]
+        ]:
+            tuple of tuples containing the splitted tensor_a and tensor_b
+    """
+
     # slice each tensor such that it gives a tuple
     # containing a tensor with the first ratio fraction of elements of the original tensor which will be used for training the model
     # and a tensor that contains the remaining elements of the origina training tensor used for validating said model
