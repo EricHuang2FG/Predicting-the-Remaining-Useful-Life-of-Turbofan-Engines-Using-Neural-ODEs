@@ -8,7 +8,7 @@ The project was inspired from the [Prediction of Remaining Useful Life of Aero-e
 
 ### Outputting Graphs and Final Results
 
-To generate graphical comparisons of the predicted and actual RULs of CNN-NODE and NODE, run [main.py](src/main.py). 8 graphs will be generated:
+To generate graphical comparisons of the predicted and actual RULs of CNN-NODE and NODE, run [main.py](src/main.py) (note that the file must be run from the root directory). 8 graphs will be generated:
 
 - The first 4 graphs show the CNN-NODE graphs in the order of FD001, FD002, FD003, FD004.
 - The 4 graphs afterwards show the NODE graphs in the order of FD001, FD002, FD003, FD004.

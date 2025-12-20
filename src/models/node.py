@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torchdiffeq import odeint
 
+
 # inherits from the nn.Module base class, forms foundational outline of neural network
 # this neural network defines the derivative function f(θ,t)
 # models how the state θ changes infinitessimally over time
@@ -10,7 +11,7 @@ from torchdiffeq import odeint
 class NeuralODE(nn.Module):
 
     def __init__(self, dimension: int = 64) -> None:
-        #initializing simple feed forward neural network
+        # initializing simple feed forward neural network
         super().__init__()
         self.linear_stack = nn.Sequential(
             nn.Linear(dimension, dimension), nn.Tanh(), nn.Linear(dimension, dimension)
@@ -23,12 +24,21 @@ class NeuralODE(nn.Module):
                 nn.init.constant_(layer.bias, 0)
 
     def forward(self, t, theta):
-        output = self.linear_stack(theta) # passes theta through the sequential stack to determine the derivative at that state
+        output = self.linear_stack(
+            theta
+        )  # passes theta through the sequential stack to determine the derivative at that state
         output = torch.clamp(output, -10.0, 10.0)
         return output
 
 
 class ODE(nn.Module):
+    """NODE model architecture for remaining useful life (RUL) prediction.
+
+    This model defines a Neural Ordinary Differential Equation (NODE) solved numerically using the
+    torchdiffeq library with the Dopri-5 method. The model takes in engine sensor reading time-series
+    as the input, and outputs a single integer value that represents the the predicted RUL of that engine.
+    """
+
     def __init__(
         self,
         input_dimension: int = 24,
@@ -60,7 +70,7 @@ class ODE(nn.Module):
     def forward(self, x, t_span=torch.tensor([0.0, 1.0])):
         # get initial state
         theta_0 = self.encoder(x)
-        
+
         # Using the DOPRI-5 solver, the ODE solution is numerically integrated over the time span
         # by going through many forward passes of the Neural ODE with adaptive step sizes
         theta_final = odeint(self.ode, theta_0, t_span, method="dopri5")[-1]
