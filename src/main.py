@@ -14,7 +14,12 @@ from src.utils.constants import (
 
 
 def main() -> None:
-    # reproducing figures in the paper
+    """execute this function to reproduce figures in the paper
+
+    This function is currently setup to reproduce the figures presented in the paper
+    that graphically compares model-predicted and ground-truth RULs. It also contains example code
+    for model training, if desired by the user.
+    """
 
     # process test data
     datasets: list[str] = ["001", "002", "003", "004"]
