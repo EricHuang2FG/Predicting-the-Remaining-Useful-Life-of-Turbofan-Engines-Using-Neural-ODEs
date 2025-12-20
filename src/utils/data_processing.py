@@ -1,8 +1,13 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
-from src.utils.constants import NUM_SETTINGS_AND_SENSOR_READINGS, DEFAULT_WINDOW_SIZE
+from src.utils.constants import (
+    NUM_SETTINGS_AND_SENSOR_READINGS,
+    DEFAULT_WINDOW_SIZE,
+    DEFAULT_FIGURE_SIZE,
+)
 
 
 # reference paper for this processing:
@@ -190,5 +195,46 @@ def split_tensors_by_ratio(
     return ((a_left, a_right), (b_left, b_right))
 
 
+def visualize_data(file_path: str, column_number: int, figure_dest: str) -> None:
+    """visualize a column of data of a particular file
+
+    Plot a graph of the data stored in column column_number of the file located at file_path
+
+    Args:
+        file_path (str): path to the raw CMAPSS data.
+        column_number (int): the number of the column of interest of the data
+        figure_dest (str): destination path of the plotted graph
+
+    Returns:
+        None
+    """
+    data: np.ndarray = np.loadtxt(file_path)
+    y: np.ndarray = data[:, column_number]
+
+    x = list(range(len(y)))
+
+    plt.figure(figsize=DEFAULT_FIGURE_SIZE)
+    plt.plot(x, y, color="red", label="Data", linewidth=1)
+
+    plt.xlabel("Row", fontweight="bold", fontsize=22)
+    plt.ylabel("Value", fontweight="bold", fontsize=22)
+    plt.title(
+        f"Data of Column {column_number + 1}",
+        fontweight="bold",
+        fontsize=26,
+    )
+    plt.legend(loc="lower right", fontsize=18)
+    plt.gca().spines["top"].set_visible(False)
+    plt.gca().spines["right"].set_visible(False)
+    plt.grid(True)
+    plt.savefig(figure_dest, dpi=300)
+    plt.tick_params(axis="both", which="major", labelsize=22)
+    plt.tight_layout()
+
+    plt.show()
+
+
 if __name__ == "__main__":
-    pass
+    visualize_data("CMAPSS/test_FD001.txt", 6, "figures/FD001_column_7.pdf")
+    visualize_data("CMAPSS/test_FD001.txt", 7, "figures/FD001_column_8.pdf")
+    visualize_data("CMAPSS/test_FD001.txt", 8, "figures/FD001_column_9.pdf")
